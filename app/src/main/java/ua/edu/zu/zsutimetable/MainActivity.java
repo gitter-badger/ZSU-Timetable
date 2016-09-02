@@ -1,5 +1,6 @@
 package ua.edu.zu.zsutimetable;
 
+import android.content.Context;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
@@ -13,10 +14,16 @@ import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
 
+import android.widget.ArrayAdapter;
 import android.widget.EditText;
+import android.widget.Spinner;
 
 import com.android.volley.*;
 import com.android.volley.toolbox.*;
+
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
 
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
@@ -25,6 +32,9 @@ public class MainActivity extends AppCompatActivity
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        Context context = MainActivity.this;
+
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
@@ -46,6 +56,21 @@ public class MainActivity extends AppCompatActivity
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
 
+        // TODO: Fill the spinner with faculties
+        Spinner spinner = (Spinner) findViewById(R.id.spinner);
+
+        String[] keys = this.getResources().getStringArray(R.array.faculty_keys);
+        String[] values = this.getResources().getStringArray(R.array.faculty_values);
+        LinkedHashMap<String, String> map = new LinkedHashMap<>();
+        for (int i = 0; i < Math.min(keys.length, values.length); ++i) {
+            map.put(keys[i], values[i]);
+        }
+
+        List<String> valueList = new ArrayList<>(map.values());
+
+        ArrayAdapter<String> adapter = new ArrayAdapter<>(context, android.R.layout.simple_spinner_item, valueList);
+        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        spinner.setAdapter(adapter);
 
         final EditText editText = (EditText) findViewById(R.id.editText);
 
@@ -70,6 +95,13 @@ public class MainActivity extends AppCompatActivity
         });
         // Add the request to the RequestQueue.
         queue.add(stringRequest);
+
+        //String[] both = Stream.concat(Arrays.stream(a), Arrays.stream(b)).toArray(String[]::new);
+
+        /*
+
+}
+         */
     }
 
     @Override

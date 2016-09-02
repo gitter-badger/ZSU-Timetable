@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="param" translatable="false">faculty</string>
+
+    <string-array name="faculty_keys">
+        <item>1001</item>
+        <item>1002</item>
+        <item>1003</item>
+        <item>1004</item>
+        <item>1005</item>
+        <item>1006</item>
+        <item>1007</item>
+        <item>1008</item>
+        <item>1009</item>
+        <item>1010</item>
+    </string-array>
+
+    <string-array name="faculty_values">
+        <item>Фізико-математичний факультет</item>
+        <item>Навчально-науковий інститут філології та журналістики</item>
+        <item>Історичний факультет</item>
+        <item>Навчально-науковий інститут іноземної філології</item>
+        <item>Природничий факультет</item>
+        <item>Навчально-науковий інститут педагогіки</item>
+        <item>Соціально-психологічний факультет</item>
+        <item>Факультет фізичного виховання та спорту</item>
+        <item>Центр післядипломної освіти та довузівської підготовки</item>
+        <item>Центр заочної форми навчання</item>
+    </string-array>
+
+</resources>
