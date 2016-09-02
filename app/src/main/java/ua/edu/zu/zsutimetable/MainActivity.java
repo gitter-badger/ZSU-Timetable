@@ -1,5 +1,6 @@
 package ua.edu.zu.zsutimetable;
 
+import android.app.Activity;
 import android.content.Context;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
@@ -14,9 +15,11 @@ import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
 
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.Spinner;
+import android.widget.Toast;
 
 import com.android.volley.*;
 import com.android.volley.toolbox.*;
@@ -28,12 +31,34 @@ import java.util.List;
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
 
+    String facultyParam;
+    int currFacultyPos;
+    Response.Listener<String> listener = new Response.Listener<String>() {
+        @Override
+        public void onResponse(String response) {
+            // Display the first 500 characters of the response string.
+            Context context = getApplicationContext();
+            Toast.makeText(context, response, Toast.LENGTH_SHORT).show();
+        }
+    };
+    Response.ErrorListener errorListener = new Response.ErrorListener() {
+        @Override
+        public void onErrorResponse(VolleyError error) {
+            Context context = getApplicationContext();
+            Toast toast = new Toast(context);
+            toast.setText("WHOOPS");
+            toast.setDuration(Toast.LENGTH_LONG);
+            toast.show();
+        }
+    };
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
         Context context = MainActivity.this;
+        facultyParam = getResources().getString(R.string.faculty_param);
 
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -54,25 +79,31 @@ public class MainActivity extends AppCompatActivity
         toggle.syncState();
 
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
+
+        AdapterView.OnItemSelectedListener spinnerListener = new AdapterView.OnItemSelectedListener() {
+
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                currFacultyPos = position;
+            }
+
+            public void onNothingSelected(AdapterView<?> parent) {
+
+            }
+        };
+
         navigationView.setNavigationItemSelectedListener(this);
 
-        // TODO: Fill the spinner with faculties
+        // TODO: add reaction to click
         Spinner spinner = (Spinner) findViewById(R.id.spinner);
+        spinner.setOnItemSelectedListener(spinnerListener);
 
-        String[] keys = this.getResources().getStringArray(R.array.faculty_keys);
         String[] values = this.getResources().getStringArray(R.array.faculty_values);
-        LinkedHashMap<String, String> map = new LinkedHashMap<>();
-        for (int i = 0; i < Math.min(keys.length, values.length); ++i) {
-            map.put(keys[i], values[i]);
-        }
 
-        List<String> valueList = new ArrayList<>(map.values());
-
-        ArrayAdapter<String> adapter = new ArrayAdapter<>(context, android.R.layout.simple_spinner_item, valueList);
+        ArrayAdapter<String> adapter = new ArrayAdapter<>(context, android.R.layout.simple_spinner_item, values);
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         spinner.setAdapter(adapter);
 
-        final EditText editText = (EditText) findViewById(R.id.editText);
+        EditText editText = (EditText) findViewById(R.id.editText);
 
 
         // Instantiate the RequestQueue.
@@ -80,21 +111,11 @@ public class MainActivity extends AppCompatActivity
         String url = "http://dekanat.zu.edu.ua/cgi-bin/timetable.cgi?n=701&lev=141&query=%D0%9A";
 
         // Request a string response from the provided URL.
-        StringRequest stringRequest = new StringRequest(Request.Method.GET, url,
-                new Response.Listener<String>() {
-                    @Override
-                    public void onResponse(String response) {
-                        // Display the first 500 characters of the response string.
-                        editText.setText("Response is: " + response.substring(0, 500));
-                    }
-                }, new Response.ErrorListener() {
-            @Override
-            public void onErrorResponse(VolleyError error) {
-                editText.setText("That didn't work!");
-            }
-        });
+        StringRequest stringRequest = new StringRequest(Request.Method.GET, url, listener, errorListener);
         // Add the request to the RequestQueue.
         queue.add(stringRequest);
+
+        editText.setText("" + currFacultyPos);
 
         //String[] both = Stream.concat(Arrays.stream(a), Arrays.stream(b)).toArray(String[]::new);
 
