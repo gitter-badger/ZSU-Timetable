@@ -1,4 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">Розклад ЖДУ</string>
+    <string name="group_field_hint">Введіть номер группи</string>
 </resources>
