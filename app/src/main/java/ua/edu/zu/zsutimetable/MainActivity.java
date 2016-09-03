@@ -32,6 +32,8 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.concurrent.ExecutionException;
 
@@ -174,8 +176,23 @@ public class MainActivity extends AppCompatActivity
     private ArrayList<String> autocomplete(String input) {
         final ArrayList<String> resultList = new ArrayList<>();
         //TODO: autocomplete!
-        String urlJSON = "http://dekanat.zu.edu.ua/cgi-bin/timetable.cgi?n=701&lev=142&faculty=1001&query=";
-        urlJSON = urlJSON + input;
+        String script = this.getResources().getString(R.string.cgi_script);
+        String n = this.getResources().getString(R.string.network);
+        Integer n2 = this.getResources().getInteger(R.integer.network_type2);
+        String autocomplete_type = this.getResources().getString(R.string.autocomplete_type_param);
+        Integer group = this.getResources().getInteger(R.integer.autocomplete_group_type);
+        String faculty = this.getResources().getString(R.string.faculty_param);
+        String[] faculty_keys = this.getResources().getStringArray(R.array.faculty_keys);
+        String query = this.getResources().getString(R.string.autocomplete_query_param);
+
+        try {
+            input = URLEncoder.encode(input, "utf-8");
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
+        }
+
+        String urlJSON = script + "?" + n + "=" + n2 + "&" + autocomplete_type + "=" + group + "&"
+                + faculty + "=" + faculty_keys[currFacultyPos] + "&" + query + "=" + input;
 
         RequestQueue queue = Volley.newRequestQueue(this);
 
