@@ -27,40 +27,17 @@ import android.widget.Toast;
 import com.android.volley.*;
 import com.android.volley.toolbox.*;
 
+import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
 
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
 
     String facultyParam;
     int currFacultyPos;
-
-
-    Response.Listener<String> listener = new Response.Listener<String>() {
-        @Override
-        public void onResponse(String response) {
-            // Display the first 500 characters of the response string.
-            Context context = getApplicationContext();
-            Toast.makeText(context, response, Toast.LENGTH_SHORT).show();
-        }
-    };
-
-
-    Response.ErrorListener errorListener = new Response.ErrorListener() {
-        @Override
-        public void onErrorResponse(VolleyError error) {
-            Context context = getApplicationContext();
-            Toast toast = new Toast(context);
-            toast.setText("WHOOPS");
-            toast.setDuration(Toast.LENGTH_LONG);
-            toast.show();
-        }
-    };
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -89,7 +66,9 @@ public class MainActivity extends AppCompatActivity
         toggle.syncState();
 
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
+        navigationView.setNavigationItemSelectedListener(this);
 
+        Spinner facultySpinner = (Spinner) findViewById(R.id.spinner);
         AdapterView.OnItemSelectedListener spinnerListener = new AdapterView.OnItemSelectedListener() {
 
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
@@ -97,13 +76,9 @@ public class MainActivity extends AppCompatActivity
             }
 
             public void onNothingSelected(AdapterView<?> parent) {
-
+                //meh
             }
         };
-
-        navigationView.setNavigationItemSelectedListener(this);
-
-        Spinner facultySpinner = (Spinner) findViewById(R.id.spinner);
         facultySpinner.setOnItemSelectedListener(spinnerListener);
 
         String[] values = this.getResources().getStringArray(R.array.faculty_values);
@@ -113,59 +88,109 @@ public class MainActivity extends AppCompatActivity
         facultySpinner.setAdapter(facutySpinnerAdapter);
 
         EditText editText = (EditText) findViewById(R.id.editText);
-
-
-        // Instantiate the RequestQueue.
-        RequestQueue queue = Volley.newRequestQueue(this);
-        String url = "http://dekanat.zu.edu.ua/cgi-bin/timetable.cgi?faculty=1001&teacher=&group=63_%B3_%E4&sdate=05.09.2016&edate=&n=700";
-
-        // Request a string response from the provided URL.
-        StringRequest stringRequest = new StringRequest(Request.Method.POST, url, listener, errorListener);
-        // Add the request to the RequestQueue.
-        //queue.add(stringRequest);
-
         editText.setText("" + currFacultyPos);
 
         AutoCompleteTextView groupField = (AutoCompleteTextView) findViewById(R.id.autoCompleteTextView);
-        groupField.setAdapter(new PlacesAutoCompleteAdapter(this, R.layout.list_item));
+        groupField.setAdapter(new GroupAutoCompleteAdapter(this, R.layout.list_item));
 
-        String urlJSON = "http://dekanat.zu.edu.ua/cgi-bin/timetable.cgi?n=701&lev=142&faculty=1001&query=6";
+        String url = "http://dekanat.zu.edu.ua/cgi-bin/timetable.cgi?faculty=1001&teacher=&group=63_%B3_%E4&sdate=05.09.2016&edate=&n=700";
 
+        //volleyJsonObjectRequest(urlJSON);
 
-        JsonObjectRequest jsObjRequest = new JsonObjectRequest
-                (Request.Method.GET, url, null, new Response.Listener<JSONObject>() {
+    }
 
+    public void volleyStringRequst(String url) {
+
+        StringRequest strReq = new StringRequest(url, new Response.Listener<String>() {
+            @Override
+            public void onResponse(String response) {
+                Context context = getApplicationContext();
+                Toast.makeText(context, response, Toast.LENGTH_SHORT).show();
+            }
+        }, new Response.ErrorListener() {
+
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                Context context = getApplicationContext();
+                Toast.makeText(context, error.toString(), Toast.LENGTH_SHORT).show();
+            }
+        });
+        // Adding String request to request queue
+        MySingleton.getInstance(getApplicationContext()).addToRequestQueue(strReq);
+    }
+
+    public void volleyJsonObjectRequest(String url, final VolleyCallback callback) {
+
+        JsonObjectRequest jsonObjectReq = new JsonObjectRequest(url, null,
+                new Response.Listener<JSONObject>() {
                     @Override
                     public void onResponse(JSONObject response) {
+
+                        Context context = getApplicationContext();
+                        try {
+                            callback.onSuccess(response.getJSONArray("suggestions"));
+                            //Toast.makeText(context, s.toString(), Toast.LENGTH_SHORT).show();
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                            Toast.makeText(getApplicationContext(),
+                                    "Error: " + e.getMessage(),
+                                    Toast.LENGTH_LONG).show();
+                        }
+                    }
+                }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                Context context = getApplicationContext();
+                Toast.makeText(context, error.toString(), Toast.LENGTH_SHORT).show();
+            }
+        });
+
+        MySingleton.getInstance(getApplicationContext()).addToRequestQueue(jsonObjectReq);
+    }
+
+    public void volleyJsonArrayRequest(String url) {
+
+        JsonArrayRequest jsonArrayReq = new JsonArrayRequest(url,
+                new Response.Listener<JSONArray>() {
+                    @Override
+                    public void onResponse(JSONArray response) {
                         Context context = getApplicationContext();
                         Toast.makeText(context, response.toString(), Toast.LENGTH_SHORT).show();
                     }
                 }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                Context context = getApplicationContext();
+                Toast.makeText(context, error.toString(), Toast.LENGTH_SHORT).show();
+            }
+        });
 
-                    @Override
-                    public void onErrorResponse(VolleyError error) {
-                        // TODO Auto-generated method stub
-
-                    }
-                });
-
-
-        //TODO: FIX SINGLETON
-        // Access the RequestQueue through your singleton class.
-        MySingleton.getInstance(this).addToRequestQueue(jsObjRequest);
-
-
-
-        //String[] both = Stream.concat(Arrays.stream(a), Arrays.stream(b)).toArray(String[]::new);
-
-        /*
-
-}
-         */
+        // Adding JsonObject request to request queue
+        MySingleton.getInstance(getApplicationContext()).addToRequestQueue(jsonArrayReq);
     }
 
     private ArrayList<String> autocomplete(String input) {
-        ArrayList<String> resultList = null;
+        final ArrayList<String> resultList = new ArrayList<>();
+        //TODO: autocomplete!
+        String urlJSON = "http://dekanat.zu.edu.ua/cgi-bin/timetable.cgi?n=701&lev=142&faculty=1001&query=";
+        urlJSON = urlJSON + input;
+
+        VolleyCallback callback = new VolleyCallback() {
+            @Override
+            public void onSuccess(JSONArray result) {
+                if (result != null) {
+                    try {
+                        for (int i = 0; i < result.length(); i++) {
+                            resultList.add(result.getString(i));
+                        }
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+        };
+        volleyJsonObjectRequest(urlJSON, callback);
+
 
         return resultList;
     }
@@ -227,10 +252,14 @@ public class MainActivity extends AppCompatActivity
         return true;
     }
 
-    private class PlacesAutoCompleteAdapter extends ArrayAdapter<String> implements Filterable {
+    public interface VolleyCallback {
+        void onSuccess(JSONArray result);
+    }
+
+    private class GroupAutoCompleteAdapter extends ArrayAdapter<String> implements Filterable {
         private ArrayList<String> resultList;
 
-        public PlacesAutoCompleteAdapter(Context context, int textViewResourceId) {
+        public GroupAutoCompleteAdapter(Context context, int textViewResourceId) {
             super(context, textViewResourceId);
         }
 
@@ -246,7 +275,7 @@ public class MainActivity extends AppCompatActivity
 
         @Override
         public Filter getFilter() {
-            Filter filter = new Filter() {
+            return new Filter() {
                 @Override
                 protected FilterResults performFiltering(CharSequence constraint) {
                     FilterResults filterResults = new FilterResults();
@@ -270,7 +299,6 @@ public class MainActivity extends AppCompatActivity
                     }
                 }
             };
-            return filter;
         }
     }
 }
