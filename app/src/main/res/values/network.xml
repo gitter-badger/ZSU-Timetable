@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
+    <string name="cgi_script" translatable="false">http://dekanat.zu.edu.ua/cgi-bin/timetable.cgi</string>
     <string name="network" translatable="false">n</string>
     <integer name="network_type1">700</integer>
     <integer name="network_type2">701</integer>
