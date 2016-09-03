@@ -2,16 +2,17 @@
 <resources>
 
     <string name="network" translatable="false">n</string>
-    <int name="network_type1">700</int>
-    <int name="network_type2">701</int>
+    <integer name="network_type1">700</integer>
+    <integer name="network_type2">701</integer>
     <string name="faculty_param" translatable="false">faculty</string>
     <string name="teacher_param" translatable="false">teacher</string>
     <string name="group_param" translatable="false">group</string>
     <string name="autocomplete_query_param" translatable="false">query</string>
     <string name="autocomplete_type_param" translatable="false">lev</string>
-    <int name="autocomplete_teacher_type">141</int>
-    <int name="autocomplete_group_type">142</int>
+    <integer name="autocomplete_teacher_type">141</integer>
+    <integer name="autocomplete_group_type">142</integer>
     <string name="start_date_param" translatable="false">sdate</string>
     <string name="end_date_param" translatable="false">edate</string>
+
 
 </resources>
