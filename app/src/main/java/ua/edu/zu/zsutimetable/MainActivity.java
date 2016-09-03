@@ -1,18 +1,18 @@
 package ua.edu.zu.zsutimetable;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
-import android.app.DownloadManager;
 import android.content.Context;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
+import android.support.v7.app.ActionBarDrawerToggle;
+import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.Toolbar;
 import android.view.View;
 import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
-import android.support.v7.app.ActionBarDrawerToggle;
-import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
 
@@ -27,6 +27,7 @@ import android.widget.Toast;
 
 import com.android.volley.*;
 import com.android.volley.toolbox.*;
+import com.wdullaer.materialdatetimepicker.date.DatePickerDialog;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -34,11 +35,15 @@ import org.json.JSONObject;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.concurrent.ExecutionException;
 
 public class MainActivity extends AppCompatActivity
-        implements NavigationView.OnNavigationItemSelectedListener {
+        implements NavigationView.OnNavigationItemSelectedListener, DatePickerDialog.OnDateSetListener {
 
     String facultyParam;
     int currFacultyPos;
@@ -72,38 +77,81 @@ public class MainActivity extends AppCompatActivity
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
 
+        String[] values = this.getResources().getStringArray(R.array.faculty_values);
         Spinner facultySpinner = (Spinner) findViewById(R.id.spinner);
+        //values
+        ArrayAdapter<String> facultySpinnerAdapter = new ArrayAdapter<>(context, android.R.layout.simple_spinner_item, values);
+        facultySpinnerAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        facultySpinner.setAdapter(facultySpinnerAdapter);
+        //listener
         AdapterView.OnItemSelectedListener spinnerListener = new AdapterView.OnItemSelectedListener() {
-
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
                 currFacultyPos = position;
             }
-
             public void onNothingSelected(AdapterView<?> parent) {
                 //meh
             }
         };
         facultySpinner.setOnItemSelectedListener(spinnerListener);
 
-        String[] values = this.getResources().getStringArray(R.array.faculty_values);
-
-        ArrayAdapter<String> facutySpinnerAdapter = new ArrayAdapter<>(context, android.R.layout.simple_spinner_item, values);
-        facutySpinnerAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        facultySpinner.setAdapter(facutySpinnerAdapter);
-
-        EditText editText = (EditText) findViewById(R.id.editText);
-        editText.setText("" + currFacultyPos);
-
         AutoCompleteTextView groupField = (AutoCompleteTextView) findViewById(R.id.autoCompleteTextView);
         groupField.setAdapter(new GroupAutoCompleteAdapter(this, R.layout.list_item));
 
-        String url = "http://dekanat.zu.edu.ua/cgi-bin/timetable.cgi?faculty=1001&teacher=&group=63_%B3_%E4&sdate=05.09.2016&edate=&n=700";
+        EditText sdate = (EditText) findViewById(R.id.sdate);
+        EditText edate = (EditText) findViewById(R.id.edate);
 
-        //volleyJsonObjectRequest(urlJSON);
+        @SuppressLint("SimpleDateFormat")
+        SimpleDateFormat format = new SimpleDateFormat("dd.MM.yyyy");
+
+
+        Calendar calendar = Calendar.getInstance();
+        Date currDate = calendar.getTime();
+        sdate.setText(format.format(currDate));
+        edate.setText(format.format(currDate));
+
+        View.OnClickListener dateListener = new View.OnClickListener() {
+            @SuppressLint("SimpleDateFormat")
+            @Override
+            public void onClick(final View v) {
+                Calendar now = Calendar.getInstance();
+                EditText t = (EditText) v;
+                try {
+                    now.setTime(new SimpleDateFormat("dd.MM.yyyy").parse(t.getText().toString()));
+                } catch (ParseException e) {
+                    e.printStackTrace();
+                }
+                DatePickerDialog dpd = DatePickerDialog.newInstance(
+                        MainActivity.this,
+                        now.get(Calendar.YEAR),
+                        now.get(Calendar.MONTH),
+                        now.get(Calendar.DAY_OF_MONTH)
+                );
+                dpd.setOnDateSetListener(new DatePickerDialog.OnDateSetListener() {
+                    @SuppressLint("SimpleDateFormat")
+                    @Override
+                    public void onDateSet(DatePickerDialog view, int year, int monthOfYear, int dayOfMonth) {
+                        monthOfYear++;
+                        EditText t = (EditText) v;
+                        String date = null;
+                        try {
+                            date = new SimpleDateFormat("dd.MM.yyyy").format(new SimpleDateFormat("dd.MM.yyyy").parse("" + dayOfMonth + "." + monthOfYear + "." + year));
+                        } catch (ParseException e) {
+                            e.printStackTrace();
+                        }
+                        t.setText(date);
+                    }
+                });
+                dpd.show(getFragmentManager(), "Datepickerdialog");
+            }
+        };
+
+        sdate.setOnClickListener(dateListener);
+        edate.setOnClickListener(dateListener);
 
     }
 
-    public void volleyStringRequst(String url) {
+
+    public void volleyStringRequest(String url) {
 
         StringRequest strReq = new StringRequest(url, new Response.Listener<String>() {
             @Override
@@ -175,7 +223,7 @@ public class MainActivity extends AppCompatActivity
 
     private ArrayList<String> autocomplete(String input) {
         final ArrayList<String> resultList = new ArrayList<>();
-        //TODO: autocomplete!
+
         String script = this.getResources().getString(R.string.cgi_script);
         String n = this.getResources().getString(R.string.network);
         Integer n2 = this.getResources().getInteger(R.integer.network_type2);
@@ -271,6 +319,11 @@ public class MainActivity extends AppCompatActivity
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         drawer.closeDrawer(GravityCompat.START);
         return true;
+    }
+
+    @Override
+    public void onDateSet(DatePickerDialog view, int year, int monthOfYear, int dayOfMonth) {
+        Toast.makeText(getApplicationContext(), "wtf", Toast.LENGTH_SHORT).show();
     }
 
     public interface VolleyCallback {
