@@ -1,6 +1,7 @@
 package ua.edu.zu.zsutimetable;
 
 import android.app.Activity;
+import android.app.DownloadManager;
 import android.content.Context;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
@@ -32,6 +33,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
+import java.util.concurrent.ExecutionException;
 
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
@@ -175,22 +177,24 @@ public class MainActivity extends AppCompatActivity
         String urlJSON = "http://dekanat.zu.edu.ua/cgi-bin/timetable.cgi?n=701&lev=142&faculty=1001&query=";
         urlJSON = urlJSON + input;
 
-        VolleyCallback callback = new VolleyCallback() {
-            @Override
-            public void onSuccess(JSONArray result) {
-                if (result != null) {
-                    try {
-                        for (int i = 0; i < result.length(); i++) {
-                            resultList.add(result.getString(i));
-                        }
-                    } catch (JSONException e) {
-                        e.printStackTrace();
-                    }
+        RequestQueue queue = Volley.newRequestQueue(this);
+
+        RequestFuture<JSONObject> future = RequestFuture.newFuture();
+
+        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.GET, urlJSON, null, future, future);
+        queue.add(jsonObjectRequest);
+
+        try {
+            JSONObject response = future.get();
+            JSONArray r = response.getJSONArray("suggestions");
+            if (r != null) {
+                for (int i = 0; i < r.length(); i++) {
+                    resultList.add(r.getString(i));
                 }
             }
-        };
-        volleyJsonObjectRequest(urlJSON, callback);
-
+        } catch (InterruptedException | JSONException | ExecutionException e) {
+            e.printStackTrace();
+        }
 
         return resultList;
     }
