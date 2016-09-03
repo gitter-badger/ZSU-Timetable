@@ -1,8 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <string name="faculty_param" translatable="false">faculty</string>
-
     <string-array name="faculty_keys">
         <item>1001</item>
         <item>1002</item>
