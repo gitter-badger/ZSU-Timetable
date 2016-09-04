@@ -47,6 +47,14 @@ public class MainActivity extends AppCompatActivity
 
     String facultyParam;
     int currFacultyPos;
+    String script;
+    String n;
+    Integer n2;
+    String autocomplete_type;
+    Integer group;
+    String faculty;
+    String[] faculty_keys;
+    String query;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -55,6 +63,14 @@ public class MainActivity extends AppCompatActivity
 
         Context context = MainActivity.this;
         facultyParam = getResources().getString(R.string.faculty_param);
+        script = this.getResources().getString(R.string.cgi_script);
+        n = this.getResources().getString(R.string.network);
+        n2 = this.getResources().getInteger(R.integer.network_type2);
+        autocomplete_type = this.getResources().getString(R.string.autocomplete_type_param);
+        group = this.getResources().getInteger(R.integer.autocomplete_group_type);
+        faculty = this.getResources().getString(R.string.faculty_param);
+        faculty_keys = this.getResources().getStringArray(R.array.faculty_keys);
+        query = this.getResources().getString(R.string.autocomplete_query_param);
 
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -130,15 +146,33 @@ public class MainActivity extends AppCompatActivity
                     @SuppressLint("SimpleDateFormat")
                     @Override
                     public void onDateSet(DatePickerDialog view, int year, int monthOfYear, int dayOfMonth) {
+                        SimpleDateFormat format = new SimpleDateFormat("dd.MM.yyyy");
+                        Date newDate = null, edateDate = null;
                         monthOfYear++;
                         EditText t = (EditText) v;
-                        String date = null;
                         try {
-                            date = new SimpleDateFormat("dd.MM.yyyy").format(new SimpleDateFormat("dd.MM.yyyy").parse("" + dayOfMonth + "." + monthOfYear + "." + year));
+                            newDate = format.parse("" + dayOfMonth + "." + monthOfYear + "." + year);
                         } catch (ParseException e) {
                             e.printStackTrace();
                         }
-                        t.setText(date);
+
+                        if (t == findViewById(R.id.sdate)) {
+                            EditText edate = (EditText) findViewById(R.id.edate);
+                            String edateValue = edate.getText().toString();
+                            try {
+                                edateDate = new SimpleDateFormat("dd.MM.yyyy").parse(edateValue);
+                            } catch (ParseException e) {
+                                e.printStackTrace();
+                            }
+
+                            if (newDate != null && edateDate != null && newDate.compareTo(edateDate) > 0) {
+                                edate.setText(format.format(newDate));
+                            }
+                        }
+
+                        if (newDate != null) {
+                            t.setText(format.format(newDate));
+                        }
                     }
                 });
                 dpd.show(getFragmentManager(), "Datepickerdialog");
@@ -222,17 +256,7 @@ public class MainActivity extends AppCompatActivity
     }
 
     private ArrayList<String> autocomplete(String input) {
-        final ArrayList<String> resultList = new ArrayList<>();
-
-        String script = this.getResources().getString(R.string.cgi_script);
-        String n = this.getResources().getString(R.string.network);
-        Integer n2 = this.getResources().getInteger(R.integer.network_type2);
-        String autocomplete_type = this.getResources().getString(R.string.autocomplete_type_param);
-        Integer group = this.getResources().getInteger(R.integer.autocomplete_group_type);
-        String faculty = this.getResources().getString(R.string.faculty_param);
-        String[] faculty_keys = this.getResources().getStringArray(R.array.faculty_keys);
-        String query = this.getResources().getString(R.string.autocomplete_query_param);
-
+        ArrayList<String> resultList = new ArrayList<>();
         try {
             input = URLEncoder.encode(input, "utf-8");
         } catch (UnsupportedEncodingException e) {
