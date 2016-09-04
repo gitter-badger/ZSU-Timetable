@@ -1,21 +1,19 @@
 package ua.edu.zu.zsutimetable;
 
 import android.annotation.SuppressLint;
-import android.app.Activity;
 import android.content.Context;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
+import android.support.design.widget.NavigationView;
 import android.support.design.widget.Snackbar;
+import android.support.v4.view.GravityCompat;
+import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
-import android.view.View;
-import android.support.design.widget.NavigationView;
-import android.support.v4.view.GravityCompat;
-import android.support.v4.widget.DrawerLayout;
 import android.view.Menu;
 import android.view.MenuItem;
-
+import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
@@ -25,8 +23,15 @@ import android.widget.Filterable;
 import android.widget.Spinner;
 import android.widget.Toast;
 
-import com.android.volley.*;
-import com.android.volley.toolbox.*;
+import com.android.volley.Request;
+import com.android.volley.RequestQueue;
+import com.android.volley.Response;
+import com.android.volley.VolleyError;
+import com.android.volley.toolbox.JsonArrayRequest;
+import com.android.volley.toolbox.JsonObjectRequest;
+import com.android.volley.toolbox.RequestFuture;
+import com.android.volley.toolbox.StringRequest;
+import com.android.volley.toolbox.Volley;
 import com.wdullaer.materialdatetimepicker.date.DatePickerDialog;
 
 import org.json.JSONArray;
@@ -45,16 +50,10 @@ import java.util.concurrent.ExecutionException;
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener, DatePickerDialog.OnDateSetListener {
 
-    String facultyParam;
-    int currFacultyPos;
-    String script;
-    String n;
-    Integer n2;
-    String autocomplete_type;
-    Integer group;
-    String faculty;
-    String[] faculty_keys;
-    String query;
+    private String script, n, autocomplete_type, faculty, query;
+    private Integer n2, group;
+    private String[] faculty_keys;
+    private int currFacultyPos;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -62,7 +61,6 @@ public class MainActivity extends AppCompatActivity
         setContentView(R.layout.activity_main);
 
         Context context = MainActivity.this;
-        facultyParam = getResources().getString(R.string.faculty_param);
         script = this.getResources().getString(R.string.cgi_script);
         n = this.getResources().getString(R.string.network);
         n2 = this.getResources().getInteger(R.integer.network_type2);
@@ -104,6 +102,7 @@ public class MainActivity extends AppCompatActivity
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
                 currFacultyPos = position;
             }
+
             public void onNothingSelected(AdapterView<?> parent) {
                 //meh
             }
@@ -212,7 +211,6 @@ public class MainActivity extends AppCompatActivity
                     @Override
                     public void onResponse(JSONObject response) {
 
-                        Context context = getApplicationContext();
                         try {
                             callback.onSuccess(response.getJSONArray("suggestions"));
                             //Toast.makeText(context, s.toString(), Toast.LENGTH_SHORT).show();
