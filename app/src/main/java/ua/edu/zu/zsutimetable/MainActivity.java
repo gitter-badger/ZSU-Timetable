@@ -15,6 +15,7 @@ import android.text.method.ScrollingMovementMethod;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.webkit.WebView;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
@@ -191,9 +192,6 @@ public class MainActivity extends AppCompatActivity
         sdate.setOnClickListener(dateListener);
         edate.setOnClickListener(dateListener);
 
-        TextView text = (TextView) findViewById(R.id.textView);
-        text.setMovementMethod(new ScrollingMovementMethod());
-
         Button showScheduleButton = (Button) findViewById(R.id.showSchedule);
         showScheduleButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -202,8 +200,8 @@ public class MainActivity extends AppCompatActivity
                 VolleyCallback rCallback = new VolleyCallback() {
                     @Override
                     public void onSuccess(String result) {
-                        TextView text = (TextView) findViewById(R.id.textView);
-                        text.setText(result);
+                        WebView viewer = (WebView) findViewById(R.id.webView);
+                        viewer.loadData(result, "text/html; charset=UTF-8", null);
                     }
                 };
 
@@ -236,11 +234,13 @@ public class MainActivity extends AppCompatActivity
                 } catch (UnsupportedEncodingException e) {
                     e.printStackTrace();
                 }
-                Document doc = Jsoup.parse(response, "UTF-8");
+                Document doc = Jsoup.parse(response);
                 Elements days = doc.select("div.col-md-6:has(h4)");
-
-                callback.onSuccess(response);
-                Toast.makeText(getApplicationContext(), String.valueOf(days.size()), Toast.LENGTH_SHORT).show();
+                if (days.size() != 0) {
+                    callback.onSuccess(days.toString());
+                } else {
+                    Toast.makeText(getApplicationContext(), R.string.error, Toast.LENGTH_SHORT).show();
+                }
             }
         }, new Response.ErrorListener() {
 
