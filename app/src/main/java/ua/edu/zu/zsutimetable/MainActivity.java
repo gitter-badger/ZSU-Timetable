@@ -208,13 +208,16 @@ public class MainActivity extends AppCompatActivity
                 };
 
                 String url = script;
+                String gr = ((EditText) findViewById(R.id.autoCompleteTextView)).getText().toString();
+                String s = ((EditText) findViewById(R.id.sdate)).getText().toString();
+                String e = ((EditText) findViewById(R.id.edate)).getText().toString();
 
                 Map<String, String> params = new HashMap<>();
                 params.put("n", "700");
                 params.put("faculty", faculty_keys[currFacultyPos]);
-                params.put("group", "63_і_д");
-                params.put("sdate", "05.09.2016");
-                params.put("edate", "07.09.2016");
+                params.put("group", gr);
+                params.put("sdate", s);
+                params.put("edate", e);
 
                 volleyStringRequest(url, params, rCallback);
             }
