@@ -11,18 +11,22 @@ import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.text.method.ScrollingMovementMethod;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Filter;
 import android.widget.Filterable;
 import android.widget.Spinner;
+import android.widget.TextView;
 import android.widget.Toast;
 
+import com.android.volley.AuthFailureError;
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
 import com.android.volley.Response;
@@ -37,8 +41,12 @@ import com.wdullaer.materialdatetimepicker.date.DatePickerDialog;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+import org.jsoup.select.Elements;
 
 import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -181,16 +189,44 @@ public class MainActivity extends AppCompatActivity
         sdate.setOnClickListener(dateListener);
         edate.setOnClickListener(dateListener);
 
+        TextView text = (TextView) findViewById(R.id.textView);
+        text.setMovementMethod(new ScrollingMovementMethod());
+
+        Button showScheduleButton = (Button) findViewById(R.id.showSchedule);
+        showScheduleButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+                VolleyCallback rCallback = new VolleyCallback() {
+                    @Override
+                    public void onSuccess(String result) {
+                        TextView text = (TextView) findViewById(R.id.textView);
+                        text.setText(result);
+                    }
+                };
+
+                String url = script + "?n=700&faculty=1001&teacher=&group=63_%B3_%E4&sdate=05.09.2016&edate=07.09.2016";
+                volleyStringRequest(url, rCallback);
+            }
+        });
+
     }
 
+    public void volleyStringRequest(String url, final VolleyCallback callback) {
 
-    public void volleyStringRequest(String url) {
-
-        StringRequest strReq = new StringRequest(url, new Response.Listener<String>() {
+        StringRequest strReq = new StringRequest(Request.Method.POST, url, new Response.Listener<String>() {
             @Override
             public void onResponse(String response) {
-                Context context = getApplicationContext();
-                Toast.makeText(context, response, Toast.LENGTH_SHORT).show();
+                try {
+                    response = URLDecoder.decode(URLEncoder.encode(response, "iso8859-1"), "windows-1251");
+                } catch (UnsupportedEncodingException e) {
+                    e.printStackTrace();
+                }
+                Document doc = Jsoup.parse(response, "UTF-8");
+                Elements days = doc.select("div.col-md-6:has(h4)");
+
+                callback.onSuccess(response);
+                Toast.makeText(getApplicationContext(), String.valueOf(days.size()), Toast.LENGTH_SHORT).show();
             }
         }, new Response.ErrorListener() {
 
@@ -200,6 +236,7 @@ public class MainActivity extends AppCompatActivity
                 Toast.makeText(context, error.toString(), Toast.LENGTH_SHORT).show();
             }
         });
+
         // Adding String request to request queue
         MySingleton.getInstance(getApplicationContext()).addToRequestQueue(strReq);
     }
@@ -210,16 +247,8 @@ public class MainActivity extends AppCompatActivity
                 new Response.Listener<JSONObject>() {
                     @Override
                     public void onResponse(JSONObject response) {
-
-                        try {
-                            callback.onSuccess(response.getJSONArray("suggestions"));
-                            //Toast.makeText(context, s.toString(), Toast.LENGTH_SHORT).show();
-                        } catch (JSONException e) {
-                            e.printStackTrace();
-                            Toast.makeText(getApplicationContext(),
-                                    "Error: " + e.getMessage(),
-                                    Toast.LENGTH_LONG).show();
-                        }
+                        Context context = getApplicationContext();
+                        Toast.makeText(context, response.toString(), Toast.LENGTH_SHORT).show();
                     }
                 }, new Response.ErrorListener() {
             @Override
@@ -261,8 +290,7 @@ public class MainActivity extends AppCompatActivity
             e.printStackTrace();
         }
 
-        String urlJSON = script + "?" + n + "=" + n2 + "&" + autocomplete_type + "=" + group + "&"
-                + faculty + "=" + faculty_keys[currFacultyPos] + "&" + query + "=" + input;
+        String urlJSON = script + "?n=701&lev=142&faculty=" + faculty_keys[currFacultyPos] + "&query=" + input;
 
         RequestQueue queue = Volley.newRequestQueue(this);
 
@@ -284,6 +312,13 @@ public class MainActivity extends AppCompatActivity
         }
 
         return resultList;
+    }
+
+
+
+    @Override
+    public void onDateSet(DatePickerDialog view, int year, int monthOfYear, int dayOfMonth) {
+        Toast.makeText(getApplicationContext(), "wtf", Toast.LENGTH_SHORT).show();
     }
 
     @Override
@@ -343,13 +378,8 @@ public class MainActivity extends AppCompatActivity
         return true;
     }
 
-    @Override
-    public void onDateSet(DatePickerDialog view, int year, int monthOfYear, int dayOfMonth) {
-        Toast.makeText(getApplicationContext(), "wtf", Toast.LENGTH_SHORT).show();
-    }
-
     public interface VolleyCallback {
-        void onSuccess(JSONArray result);
+        void onSuccess(String result);
     }
 
     private class GroupAutoCompleteAdapter extends ArrayAdapter<String> implements Filterable {
