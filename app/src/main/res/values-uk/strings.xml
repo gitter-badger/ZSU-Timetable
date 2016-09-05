@@ -2,4 +2,5 @@
 <resources>
     <string name="app_name">Розклад ЖДУ</string>
     <string name="group_field_hint">Введіть номер группи</string>
+    <string name="show_schedule">Показати розклад</string>
 </resources>

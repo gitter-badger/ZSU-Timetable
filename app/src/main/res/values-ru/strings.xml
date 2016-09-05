@@ -2,4 +2,5 @@
 <resources>
     <string name="app_name">Расписание ЖДУ</string>
     <string name="group_field_hint">Введите номер группы</string>
+    <string name="show_schedule">Показать расписание</string>
 </resources>
