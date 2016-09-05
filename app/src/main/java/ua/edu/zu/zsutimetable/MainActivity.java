@@ -53,6 +53,8 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.ExecutionException;
 
 public class MainActivity extends AppCompatActivity
@@ -205,16 +207,25 @@ public class MainActivity extends AppCompatActivity
                     }
                 };
 
-                String url = script + "?n=700&faculty=1001&teacher=&group=63_%B3_%E4&sdate=05.09.2016&edate=07.09.2016";
-                volleyStringRequest(url, rCallback);
+                String url = script;
+
+                Map<String, String> params = new HashMap<>();
+                params.put("n", "700");
+                params.put("faculty", faculty_keys[currFacultyPos]);
+                params.put("group", "63_і_д");
+                params.put("sdate", "05.09.2016");
+                params.put("edate", "07.09.2016");
+
+                volleyStringRequest(url, params, rCallback);
             }
         });
 
     }
 
-    public void volleyStringRequest(String url, final VolleyCallback callback) {
+    public void volleyStringRequest(String url, final Map<String, String> params, final VolleyCallback callback) {
 
-        StringRequest strReq = new StringRequest(Request.Method.POST, url, new Response.Listener<String>() {
+        final StringRequest strReq = new StringRequest(Request.Method.POST, url, new Response.Listener<String>() {
+
             @Override
             public void onResponse(String response) {
                 try {
@@ -235,7 +246,17 @@ public class MainActivity extends AppCompatActivity
                 Context context = getApplicationContext();
                 Toast.makeText(context, error.toString(), Toast.LENGTH_SHORT).show();
             }
-        });
+        }) {
+            @Override
+            protected Map<String, String> getParams() {
+                return params;
+            }
+
+            @Override
+            protected String getParamsEncoding() {
+                return "windows-1251";
+            }
+        };
 
         // Adding String request to request queue
         MySingleton.getInstance(getApplicationContext()).addToRequestQueue(strReq);
