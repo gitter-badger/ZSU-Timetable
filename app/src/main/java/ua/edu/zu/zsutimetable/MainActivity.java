@@ -201,7 +201,7 @@ public class MainActivity extends AppCompatActivity
                     @Override
                     public void onSuccess(String result) {
                         WebView viewer = (WebView) findViewById(R.id.webView);
-                        viewer.loadData(result, "text/html; charset=UTF-8", null);
+                        viewer.loadDataWithBaseURL("file:///android_asset/", result, "text/html; charset=UTF-8", null, null);
                     }
                 };
 
@@ -237,7 +237,8 @@ public class MainActivity extends AppCompatActivity
                 Document doc = Jsoup.parse(response);
                 Elements days = doc.select("div.col-md-6:has(h4)");
                 if (days.size() != 0) {
-                    callback.onSuccess(days.toString());
+                    String htmlData = "<link rel=\"stylesheet\" type=\"text/css\" href=\"css.css\" />" + days.toString();
+                    callback.onSuccess(htmlData);
                 } else {
                     Toast.makeText(getApplicationContext(), R.string.error, Toast.LENGTH_SHORT).show();
                 }
